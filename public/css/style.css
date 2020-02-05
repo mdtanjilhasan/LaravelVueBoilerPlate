@@ -1,0 +1,11 @@
+.action-btn-p{
+    padding: 5px 8px;
+    float: left;
+    margin-right: 5px;
+}
+.action-btn-p i{
+    margin-right: 0;
+}
+.heightError {
+    height: 10px;
+}
