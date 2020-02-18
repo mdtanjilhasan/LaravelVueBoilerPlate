@@ -31,7 +31,6 @@
             </div>
         </div>
 
-        <!-- use the modal component, pass in the prop -->
         <div v-if="isShow">
             <modal-component @close="isShow = false" :id="selected" @getUsers="getUsers" @notify="notify"></modal-component>
         </div>
