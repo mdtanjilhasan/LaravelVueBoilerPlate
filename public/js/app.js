@@ -1998,7 +1998,18 @@ __webpack_require__.r(__webpack_exports__);
     },
     pagination: {
       type: Object,
-      required: true
+      "default": function _default() {
+        return {
+          lastPage: '',
+          currentPage: '',
+          total: '',
+          lastPageUrl: '',
+          nextPageUrl: '',
+          prevPageUrl: '',
+          from: '',
+          to: ''
+        };
+      }
     },
     link: {
       type: String,
@@ -2007,13 +2018,10 @@ __webpack_require__.r(__webpack_exports__);
   },
   data: function data() {
     return {
-      paginate: '',
-      modifiedColumns: [],
-      perPage: 10
+      modifiedColumns: []
     };
   },
   created: function created() {
-    // console.log(this.filters);
     var index, obj;
     this.modifiedColumns = this.columns;
 
@@ -2024,8 +2032,6 @@ __webpack_require__.r(__webpack_exports__);
         obj.ordarable = false;
       }
     }
-
-    this.paginator();
   },
   mounted: function mounted() {
     this.getModel();
@@ -2034,14 +2040,18 @@ __webpack_require__.r(__webpack_exports__);
     columnHead: function columnHead(value) {
       return value.toUpperCase();
     },
-    paginator: function paginator() {
-      this.paginate = this.pagination;
-    },
-    getModel: function getModel(url) {
-      this.$emit('getModel', url);
+    getModel: function getModel(url, filter) {
+      if (!filter) {
+        filter = this.filters;
+      }
+
+      if (!url) {
+        url = this.link;
+      }
+
+      this.$emit('getModel', url, filter);
     },
     sortByColumn: function sortByColumn(column) {
-      // console.log('hello');
       var result = this.columns.filter(function (obj) {
         return obj.label === column;
       });
@@ -2054,14 +2064,21 @@ __webpack_require__.r(__webpack_exports__);
           this.filters.dir = 'asc';
         }
 
-        console.log(this.filters);
-        var newUrl = window.location.protocol + '//' + window.location.hostname + this.link + '?itemPerPage=' + this.filters.itemPerPage + '&search=' + this.filters.search + '&column=' + this.filters.column + '&dir=' + this.filters.dir;
-        this.getModel(newUrl);
+        this.getModel();
       }
     },
-    onChange: function onChange(event) {
-      this.filters.itemPerPage = event.target.value;
-      this.$emit('getModel');
+    serialNumber: function serialNumber(key) {
+      return (this.pagination.currentPage - 1) * this.filters.itemPerPage + 1 + key;
+    },
+    configPagination: function configPagination(data) {
+      this.pagination.lastPage = data.last_page;
+      this.pagination.currentPage = data.current_page;
+      this.pagination.total = data.total;
+      this.pagination.lastPageUrl = data.last_page_url;
+      this.pagination.nextPageUrl = data.next_page_url;
+      this.pagination.prevPageUrl = data.prev_page_url;
+      this.pagination.from = data.from;
+      this.pagination.to = data.to;
     }
   }
 });
@@ -2543,7 +2560,6 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _Mixins_pagination__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../Mixins/pagination */ "./resources/js/Mixins/pagination.js");
 //
 //
 //
@@ -2587,13 +2603,12 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
-
 /* harmony default export */ __webpack_exports__["default"] = ({
-  mixins: [_Mixins_pagination__WEBPACK_IMPORTED_MODULE_0__["pagination"]],
   data: function data() {
     return {
       users: [],
       deleteUrl: '',
+      obj: '',
       fetchUrl: '/users/data',
       loadPreloader: false,
       isShow: false,
@@ -2625,9 +2640,6 @@ __webpack_require__.r(__webpack_exports__);
       showDelModal: false
     };
   },
-  mounted: function mounted() {
-    this.getUsers();
-  },
   methods: {
     openModal: function openModal(id) {
       this.selected = id;
@@ -2642,15 +2654,17 @@ __webpack_require__.r(__webpack_exports__);
       var _this = this;
 
       var url = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '/users/data';
+      var filter = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
+      this.obj = this.$refs.dataTable;
       axios.get(url, {
-        params: this.filters
+        params: filter
       }).then(function (response) {
         _this.users = response.data.users.data;
         _this.userCreate = response.data.user_create;
         _this.userEdit = response.data.user_edit;
         _this.userDelete = response.data.user_delete;
 
-        _this.configPagination(response.data.users);
+        _this.obj.configPagination(response.data.users);
       });
     },
     notify: function notify(msg) {
@@ -49892,7 +49906,7 @@ var render = function() {
             [
               _vm._m(1),
               _vm._v(" "),
-              _c("h3", [_vm._v("Sign In to Taskola")]),
+              _c("h3", [_vm._v("Sign In to Your Dashboard")]),
               _vm._v(" "),
               _c("p", [_vm._v("Happy to see you again!")]),
               _vm._v(" "),
@@ -50065,7 +50079,8 @@ var staticRenderFns = [
           {
             staticClass: "lavalite-bg",
             staticStyle: {
-              "background-image": "url('assets/img/auth/login-bg.jpg')"
+              "background-image": "url('assets/img/auth/vue-laravel.jpg')",
+              "background-position": "center center"
             }
           },
           [_c("div", { staticClass: "lavalite-overlay" })]
@@ -50077,8 +50092,8 @@ var staticRenderFns = [
     var _vm = this
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "logo-centered" }, [
-      _c("a", { attrs: { href: "javascript:void(9)" } }, [_vm._v("TK")])
+    return _c("div", { staticClass: "logo-centered w-100" }, [
+      _c("a", { attrs: { href: "javascript:void(9)" } }, [_vm._v("LaravelVue")])
     ])
   },
   function() {
@@ -50159,13 +50174,15 @@ var render = function() {
                       {
                         name: "model",
                         rawName: "v-model",
-                        value: _vm.perPage,
-                        expression: "perPage"
+                        value: _vm.filters.itemPerPage,
+                        expression: "filters.itemPerPage"
                       }
                     ],
                     staticClass: "form-control",
                     on: {
-                      input: function($event) {},
+                      input: function($event) {
+                        return _vm.getModel("", "")
+                      },
                       change: function($event) {
                         var $$selectedVal = Array.prototype.filter
                           .call($event.target.options, function(o) {
@@ -50175,9 +50192,13 @@ var render = function() {
                             var val = "_value" in o ? o._value : o.value
                             return val
                           })
-                        _vm.perPage = $event.target.multiple
-                          ? $$selectedVal
-                          : $$selectedVal[0]
+                        _vm.$set(
+                          _vm.filters,
+                          "itemPerPage",
+                          $event.target.multiple
+                            ? $$selectedVal
+                            : $$selectedVal[0]
+                        )
                       }
                     }
                   },
@@ -50219,7 +50240,7 @@ var render = function() {
                         _vm.$set(_vm.filters, "search", $event.target.value)
                       },
                       function($event) {
-                        return _vm.$emit("getModel")
+                        return _vm.getModel("", "")
                       }
                     ]
                   }
@@ -50284,7 +50305,7 @@ var render = function() {
       _c("div", { staticClass: "w-100 p-1" }),
       _vm._v(" "),
       _c("pagination", {
-        attrs: { paginator: _vm.paginate },
+        attrs: { paginator: _vm.pagination },
         on: { prev: _vm.getModel, next: _vm.getModel }
       })
     ],
@@ -51097,11 +51118,8 @@ var render = function() {
           _c(
             "data-table",
             {
-              attrs: {
-                columns: _vm.columns,
-                pagination: _vm.pagination,
-                link: _vm.fetchUrl
-              },
+              ref: "dataTable",
+              attrs: { columns: _vm.columns, link: _vm.fetchUrl },
               on: { getModel: _vm.getUsers }
             },
             [
@@ -51109,7 +51127,7 @@ var render = function() {
                 "tbody",
                 _vm._l(_vm.users, function(user, index) {
                   return _c("tr", { key: user.id }, [
-                    _c("th", [_vm._v(_vm._s(_vm.serialNumber(index)))]),
+                    _c("th", [_vm._v(_vm._s(_vm.obj.serialNumber(index)))]),
                     _vm._v(" "),
                     _c("td", [_vm._v(_vm._s(user.name))]),
                     _vm._v(" "),
@@ -66420,56 +66438,6 @@ module.exports = function(module) {
 
 /***/ }),
 
-/***/ "./resources/js/Mixins/pagination.js":
-/*!*******************************************!*\
-  !*** ./resources/js/Mixins/pagination.js ***!
-  \*******************************************/
-/*! exports provided: pagination */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "pagination", function() { return pagination; });
-var pagination = {
-  data: function data() {
-    return {
-      pagination: {
-        lastPage: '',
-        currentPage: '',
-        total: '',
-        lastPageUrl: '',
-        nextPageUrl: '',
-        prevPageUrl: '',
-        from: '',
-        to: ''
-      },
-      filters: {
-        itemPerPage: 10,
-        search: '',
-        column: 'id',
-        dir: 'desc'
-      }
-    };
-  },
-  methods: {
-    configPagination: function configPagination(data) {
-      this.pagination.lastPage = data.last_page;
-      this.pagination.currentPage = data.current_page;
-      this.pagination.total = data.total;
-      this.pagination.lastPageUrl = data.last_page_url;
-      this.pagination.nextPageUrl = data.next_page_url;
-      this.pagination.prevPageUrl = data.prev_page_url;
-      this.pagination.from = data.from;
-      this.pagination.to = data.to;
-    },
-    serialNumber: function serialNumber(key) {
-      return (this.pagination.currentPage - 1) * this.filters.itemPerPage + 1 + key;
-    }
-  }
-};
-
-/***/ }),
-
 /***/ "./resources/js/app.js":
 /*!*****************************!*\
   !*** ./resources/js/app.js ***!
@@ -67426,8 +67394,8 @@ __webpack_require__.r(__webpack_exports__);
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(/*! C:\laragon\www\taskola\resources\js\app.js */"./resources/js/app.js");
-module.exports = __webpack_require__(/*! C:\laragon\www\taskola\resources\sass\app.scss */"./resources/sass/app.scss");
+__webpack_require__(/*! C:\laragon\www\LaravelVueBoilerPlate\resources\js\app.js */"./resources/js/app.js");
+module.exports = __webpack_require__(/*! C:\laragon\www\LaravelVueBoilerPlate\resources\sass\app.scss */"./resources/sass/app.scss");
 
 
 /***/ })
