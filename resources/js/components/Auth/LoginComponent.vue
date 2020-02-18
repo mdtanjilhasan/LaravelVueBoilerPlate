@@ -3,16 +3,16 @@
         <div class="container-fluid h-100">
             <div class="row flex-row h-100 bg-white">
                 <div class="col-xl-8 col-lg-6 col-md-5 p-0 d-md-block d-lg-block d-sm-none d-none">
-                    <div class="lavalite-bg" style="background-image: url('assets/img/auth/login-bg.jpg')">
+                    <div class="lavalite-bg" style="background-image: url('assets/img/auth/vue-laravel.jpg');background-position:center center;">
                         <div class="lavalite-overlay"></div>
                     </div>
                 </div>
                 <div class="col-xl-4 col-lg-6 col-md-7 my-auto p-0">
                     <div class="authentication-form mx-auto">
-                        <div class="logo-centered">
-                            <a href="javascript:void(9)">TK</a>
+                        <div class="logo-centered w-100">
+                            <a href="javascript:void(9)">LaravelVue</a>
                         </div>
-                        <h3>Sign In to Taskola</h3>
+                        <h3>Sign In to Your Dashboard</h3>
                         <p>Happy to see you again!</p>
                         <validation-errors :myErrors="validationErrors" v-if="validationErrors"></validation-errors>
                             <div class="form-group">

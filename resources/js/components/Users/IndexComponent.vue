@@ -9,10 +9,10 @@
             <div class="card-body">
                 <error-success-message v-if="showMessage" :message="message" @close="showMessage = false"></error-success-message>
                 <!-- if use default filters then you don't  need to pass this props to data table -->
-                <data-table :columns="columns" :pagination="pagination" :link="fetchUrl" @getModel="getUsers">
+                <data-table ref="dataTable" :columns="columns" :link="fetchUrl" @getModel="getUsers">
                     <tbody>
                         <tr v-for="(user,index) in users" :key="user.id">
-                            <th>{{ serialNumber(index) }}</th>
+                            <th>{{ obj.serialNumber(index) }}</th>
                             <td>{{ user.name}}</td>
                             <td>{{ user.email }}</td>
                             <td>
@@ -42,13 +42,12 @@
 </template>
 
 <script>
-    import { pagination } from "../../Mixins/pagination";
     export default {
-        mixins: [pagination],
         data(){
             return{
                 users:[],
                 deleteUrl:'',
+                obj:'',
                 fetchUrl:'/users/data',
                 loadPreloader:false,
                 isShow:false,
@@ -72,10 +71,6 @@
                 showDelModal: false,
             }
         },
-
-        mounted() {
-            this.getUsers();
-        },
         methods:{
             openModal(id) {
                 this.selected = id;
@@ -85,13 +80,14 @@
                 this.deleteUrl = '/delete-user/'+id; // this must be full delete url
                 this.showDelModal = true;
             }, 
-            getUsers(url = '/users/data'){
-                axios.get(url, {params: this.filters}).then(response => {
+            getUsers(url = '/users/data',filter = ''){
+                this.obj = this.$refs.dataTable;
+                axios.get(url, {params: filter}).then(response => {
                     this.users = response.data.users.data;
                     this.userCreate = response.data.user_create;
                     this.userEdit = response.data.user_edit;
                     this.userDelete = response.data.user_delete;
-                    this.configPagination(response.data.users);
+                    this.obj.configPagination(response.data.users);
                 });
             },
             notify(msg) {
